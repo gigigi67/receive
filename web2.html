@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Kitchen Display | Taste of Bhutan</title>
+    <link rel="stylesheet" href="design.css">
+    <style>
+        .order-card {
+            background: white;
+            border-left: 10px solid var(--primary-color);
+            margin-bottom: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+        .status-btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .clear-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        .item-list { font-size: 0.9rem; color: #555; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Kitchen Dashboard</h1>
+        <button class="clear-btn" onclick="clearOrders()" style="margin:0">Clear All Orders</button>
+    </header>
+
+    <main style="display: block;">
+        <h2>Active Orders</h2>
+        <div id="orders-display">
+            </div>
+    </main>
+
+    <script>
+        function loadOrders() {
+            const display = document.getElementById('orders-display');
+            const orders = JSON.parse(localStorage.getItem('restaurantOrders') || '[]');
+
+            if (orders.length === 0) {
+                display.innerHTML = "<p>No active orders at the moment.</p>";
+                return;
+            }
+
+            display.innerHTML = orders.map((order, index) => `
+                <div class="order-card">
+                    <div class="order-header">
+                        <div>
+                            <strong>Order #${order.id.toString().slice(-4)}</strong> - ${order.time}
+                            <p style="margin: 5px 0;">Customer: ${order.customer} (${order.phone})</p>
+                        </div>
+                        <button class="status-btn" onclick="completeOrder(${index})">Complete Order</button>
+                    </div>
+                    <div class="item-list">
+                        <strong>Items:</strong> ${order.items.map(i => i.name).join(', ')}
+                    </div>
+                    <p><strong>Type:</strong> ${order.type} | <strong>Total:</strong> Nu. ${order.total}</p>
+                    <p><strong>Address/Table:</strong> ${order.address}</p>
+                </div>
+            `).join('');
+        }
+
+        function completeOrder(index) {
+            let orders = JSON.parse(localStorage.getItem('restaurantOrders') || '[]');
+            orders.splice(index, 1); // Remove completed order
+            localStorage.setItem('restaurantOrders', JSON.stringify(orders));
+            loadOrders();
+        }
+
+        function clearOrders() {
+            if(confirm("Clear all order history?")) {
+                localStorage.removeItem('restaurantOrders');
+                loadOrders();
+            }
+        }
+
+        // Auto-refresh the dashboard every 5 seconds
+        setInterval(loadOrders, 5000);
+        loadOrders();
+    </script>
+</body>
+</html>
